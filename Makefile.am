@@ -71,7 +71,7 @@ bin_PROGRAMS =                     \
 	phonetisaurus-g2prnn       \
 	rnnlm
 
-AM_CPPFLAGS = -I$(top_srcdir)/src -DGIT_REVISION=\"$(GIT_REVISION)\" -std=c++0x -Wall -Wno-sign-compare -Wno-unused-local-typedefs
+AM_CPPFLAGS = -I$(top_srcdir)/src -DGIT_REVISION=\"$(GIT_REVISION)\" -std=c++17 -Wall -Wno-sign-compare -Wno-unused-local-typedefs
 
 phonetisaurus_align_SOURCES = src/bin/phonetisaurus-align.cc src/include/PhonetisaurusRex.h src/lib/util.cc src/include/util.h src/lib/LatticePruner.cc src/include/LatticePruner.h src/lib/M2MFstAligner.cc src/include/M2MFstAligner.h
 phonetisaurus_align_CXXFLAGS = $(OPENFST_CXXFLAGS) $(UTFCPP_CXXFLAGS)

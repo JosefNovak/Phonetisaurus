@@ -44,8 +44,8 @@ static inline float FAST_EXP (float p) {
 template<class T, class H>
 class LegacyRnnLMDecodable {
  public:
-  LegacyRnnLMDecodable (H& hash, int i, int h, int o, int d, int m)
-    : h (hash), isize (i), hsize (h), osize (o), order (d), max_order (m) { }
+  LegacyRnnLMDecodable (H& _hash, int i, int h, int o, int d, int m)
+    : h (_hash), isize (i), hsize (h), osize (o), order (d), max_order (m) { }
 
   double ComputeNet (const T& p, T* t) {
     vector<double> olayer;
@@ -73,28 +73,28 @@ class LegacyRnnLMDecodable {
 
     // Begin class direct connection activations
     if (synd.size () > 0) {
-      // Feature hash begin
-      vector<uint64> hash;
-      hash.resize (max_order, 0);
+      // Feature _hash begin
+      vector<uint64_t> _hash;
+      _hash.resize (max_order, 0);
 
       for (int i = 0; i < order; i++) {
         if (i > 0)
           if (t->history [i - 1] == -1)
             break;
-        hash [i] = h.primes_[0] * h.primes_[1];
+        _hash [i] = h.primes_[0] * h.primes_[1];
         for (int j = 1; j <= i; j++)
-          hash [i] +=
+          _hash [i] +=
             h.primes_[(i * h.primes_[j] + j) % h.primes_.size ()]
-            * static_cast<uint64>(t->history [j - 1] + 1);
+            * static_cast<uint64_t>(t->history [j - 1] + 1);
 
-        hash [i] = hash [i] % (synd.size () / 2);
+        _hash [i] = _hash [i] % (synd.size () / 2);
       }
-      // Feature hash end
+      // Feature _hash end
       for (int i = h.vocab_.size (); i < osize; i++) {
         for (int j = 0; j < order; j++) {
-          if (hash [j]) {
-            olayer [i] += synd [hash [j]];
-            hash [j]++;
+          if (_hash [j]) {
+            olayer [i] += synd [_hash [j]];
+            _hash [j]++;
           } else {
             break;
           }
@@ -127,33 +127,33 @@ class LegacyRnnLMDecodable {
 
       // Begin word direct connection activations
       if (synd.size () > 0) {
-        // Begin feature hashing
-        uint64 hash [max_order];
+        // Begin feature _hashing
+        uint64_t _hash [max_order];
         for (int i = 0; i < order; i++)
-          hash [i] = 0;
+          _hash [i] = 0;
 
         for (int i = 0; i < order; i++) {
           if (i > 0)
             if (t->history [i - 1] == -1)
               break;
 
-          hash [i] = h.primes_[0] * h.primes_[1]
-            * static_cast<uint64> (h.vocab_[t->word].class_index + 1);
+          _hash [i] = h.primes_[0] * h.primes_[1]
+            * static_cast<uint64_t> (h.vocab_[t->word].class_index + 1);
 
           for (int j = 1; j <= i; j++)
-            hash [i] += h.primes_[(i * h.primes_[j] + j) % h.primes_.size ()]
-              * static_cast<uint64> (t->history [j - 1] + 1);
+            _hash [i] += h.primes_[(i * h.primes_[j] + j) % h.primes_.size ()]
+              * static_cast<uint64_t> (t->history [j - 1] + 1);
 
-          hash [i] = (hash [i] % (synd.size () / 2)) + (synd.size () / 2);
+          _hash [i] = (_hash [i] % (synd.size () / 2)) + (synd.size () / 2);
         }
-        // End feature hashing
+        // End feature _hashing
 
         for (int i = begin; i <= end; i++) {
           for (int j = 0; j < order; j++) {
-            if (hash [j]) {
-              olayer [i] += synd [hash [j]];
-              hash [j]++;
-              hash [j] = hash [j] % synd.size ();
+            if (_hash [j]) {
+              olayer [i] += synd [_hash [j]];
+              _hash [j]++;
+              _hash [j] = _hash [j] % synd.size ();
             } else {
               break;
             }
@@ -179,7 +179,7 @@ class LegacyRnnLMDecodable {
       * olayer [h.vocab_.size () + h.vocab_[t->word].class_index];
   }
 
-  // We need the synapses and the vocabulary hash
+  // We need the synapses and the vocabulary _hash
   H& h;
   int isize;
   int hsize;

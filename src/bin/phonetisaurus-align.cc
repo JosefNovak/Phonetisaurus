@@ -97,7 +97,7 @@ void write_alignments (M2MFstAligner* aligner, string ofile_name,
   for (unsigned int i = 0; i < aligner->fsas.size (); i++) {
     //Map to Tropical semiring
     VectorFst<StdArc>* tfst = new VectorFst<StdArc> ();
-    Map (aligner->fsas.at (i), tfst, LogToStdMapper ());
+    ArcMap (aligner->fsas.at (i), tfst, LogToStdMapper ());
     pruner.prune_fst (tfst);
     RmEpsilon (tfst);
     //Skip empty results.  This should only happen
@@ -160,7 +160,7 @@ void compileNBestFarArchive (M2MFstAligner* aligner,
   string key_suffix = "";
   string key        = "";
   char   keybuf[16];
-  int32  generate_keys = 7; //Suitable for up to several million lattices
+  int32_t  generate_keys = 7; //Suitable for up to several million lattices
   bool   set_syms = false; //Have we set the isyms successfully yet??
   //Build us a FarWriter to compile the archive
   FarWriter<StdArc> *far_writer = \
@@ -180,11 +180,11 @@ void compileNBestFarArchive (M2MFstAligner* aligner,
     VectorFst<StdArc>* ffst = new VectorFst<StdArc> ();
 
     //Map to the Tropical semiring
-    Map (fsts->at(i), tfst, LogToStdMapper ());
+    ArcMap (fsts->at(i), tfst, LogToStdMapper ());
     pruner.prune_fst (tfst);
 
     //Map back to the Log semiring
-    Map (*tfst, lfst, StdToLogMapper ());
+    ArcMap (*tfst, lfst, StdToLogMapper ());
 
     //Perform posterior normalization of the N-best lattice by pushing weights
     //  in the log semiring and then removing the final weight.
@@ -204,7 +204,7 @@ void compileNBestFarArchive (M2MFstAligner* aligner,
     if (pfst->NumStates () == 0) continue;
 
     //Finally map back to the Tropical semiring for the last time
-    Map (*pfst, ffst, LogToStdMapper ());
+    ArcMap (*pfst, ffst, LogToStdMapper ());
 
     if (set_syms == false) {
       ffst->SetInputSymbols (aligner->isyms);
@@ -267,28 +267,28 @@ int main( int argc, char* argv[] ){
   PhonetisaurusSetFlags (usage.c_str(), &argc, &argv, false);
   M2MFstAligner aligner;
 
-  if (FLAGS_load_model == true) {
-    aligner = *(new M2MFstAligner (FLAGS_model_file, FLAGS_penalize,
-                   FLAGS_penalize_em, FLAGS_restrict));
-    switch (load_input_file (&aligner, FLAGS_input, FLAGS_delim,
-                 FLAGS_s1_char_delim, FLAGS_s2_char_delim,
-                 FLAGS_load_model)) {
+  if (FST_FLAGS_load_model == true) {
+    aligner = *(new M2MFstAligner (FST_FLAGS_model_file, FST_FLAGS_penalize,
+                   FST_FLAGS_penalize_em, FST_FLAGS_restrict));
+    switch (load_input_file (&aligner, FST_FLAGS_input, FST_FLAGS_delim,
+                 FST_FLAGS_s1_char_delim, FST_FLAGS_s2_char_delim,
+                 FST_FLAGS_load_model)) {
     case 0:
       cerr << "Please provide a valid input file." << endl;
     case -1:
       return -1;
     }
   } else {
-    aligner = *(new M2MFstAligner (FLAGS_seq1_del, FLAGS_seq2_del,
-                   FLAGS_seq1_max, FLAGS_seq2_max,
-                   FLAGS_seq1_sep, FLAGS_seq2_sep,
-                   FLAGS_s1s2_sep, FLAGS_eps, FLAGS_skip,
-                   FLAGS_penalize, FLAGS_penalize_em,
-                   FLAGS_restrict, FLAGS_grow
+    aligner = *(new M2MFstAligner (FST_FLAGS_seq1_del, FST_FLAGS_seq2_del,
+                   FST_FLAGS_seq1_max, FST_FLAGS_seq2_max,
+                   FST_FLAGS_seq1_sep, FST_FLAGS_seq2_sep,
+                   FST_FLAGS_s1s2_sep, FST_FLAGS_eps, FST_FLAGS_skip,
+                   FST_FLAGS_penalize, FST_FLAGS_penalize_em,
+                   FST_FLAGS_restrict, FST_FLAGS_grow
                    ));
-    switch (load_input_file (&aligner, FLAGS_input, FLAGS_delim,
-                 FLAGS_s1_char_delim, FLAGS_s2_char_delim,
-                 FLAGS_load_model)) {
+    switch (load_input_file (&aligner, FST_FLAGS_input, FST_FLAGS_delim,
+                 FST_FLAGS_s1_char_delim, FST_FLAGS_s2_char_delim,
+                 FST_FLAGS_load_model)) {
     case 0:
       cerr << "Please provide a valid input file." << endl;
     case -1:
@@ -298,7 +298,7 @@ int main( int argc, char* argv[] ){
     cerr << "Starting EM..." << endl;
     aligner.maximization (false);
     cerr << "Finished first iter..." << endl;
-    for (int i = 1; i <= FLAGS_iter; i++) {
+    for (int i = 1; i <= FST_FLAGS_iter; i++) {
       cerr << "Iteration: " << i << " Change: ";
       aligner.expectation ();
       cerr << aligner.maximization (false) << endl;
@@ -309,21 +309,21 @@ int main( int argc, char* argv[] ){
     aligner.maximization (true);
   }
 
-  StdArc::Weight pthresh = FLAGS_pthresh == -99.0
+  StdArc::Weight pthresh = FST_FLAGS_pthresh == -99.0
     ? LogWeight::Zero().Value()
-    : FLAGS_pthresh;
-  if (FLAGS_write_model.compare ("") != 0) {
+    : FST_FLAGS_pthresh;
+  if (FST_FLAGS_write_model.compare ("") != 0) {
     cerr << "Writing alignment model in OpenFst format to file: "
-     << FLAGS_write_model << endl;
-    aligner.write_model (FLAGS_write_model);
+     << FST_FLAGS_write_model << endl;
+    aligner.write_model (FST_FLAGS_write_model);
   }
 
-  if (FLAGS_lattice == true)
-    compileNBestFarArchive (&aligner, &aligner.fsas, FLAGS_ofile, pthresh,
-                FLAGS_nbest, FLAGS_fb, FLAGS_penalize);
+  if (FST_FLAGS_lattice == true)
+    compileNBestFarArchive (&aligner, &aligner.fsas, FST_FLAGS_ofile, pthresh,
+                FST_FLAGS_nbest, FST_FLAGS_fb, FST_FLAGS_penalize);
   else
-    write_alignments (&aligner, FLAGS_ofile, pthresh, FLAGS_nbest,
-              FLAGS_fb, FLAGS_penalize);
+    write_alignments (&aligner, FST_FLAGS_ofile, pthresh, FST_FLAGS_nbest,
+              FST_FLAGS_fb, FST_FLAGS_penalize);
 
   return 0;
 }

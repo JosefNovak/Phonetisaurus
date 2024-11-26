@@ -52,23 +52,23 @@ int main (int argc, char* argv []) {
   set_new_handler (FailedNewHandler);
   PhonetisaurusSetFlags (usage.c_str(), &argc, &argv, false);
 
-  if (FLAGS_lm.compare ("") == 0) {
+  if (FST_FLAGS_lm.compare ("") == 0) {
     cerr << "You must supply an ARPA format lm "
       "to --lm for conversion!" << endl;
     return 0;
   }
     
   cerr << "Initializing..." << endl;
-  ARPA2WFST* converter = new ARPA2WFST (FLAGS_lm, FLAGS_eps, FLAGS_sb, 
-					FLAGS_se, FLAGS_split, FLAGS_skip, 
-					FLAGS_tie);
+  ARPA2WFST* converter = new ARPA2WFST (FST_FLAGS_lm, FST_FLAGS_eps, FST_FLAGS_sb, 
+					FST_FLAGS_se, FST_FLAGS_split, FST_FLAGS_skip, 
+					FST_FLAGS_tie);
   cerr << "Converting..." << endl;
   converter->arpa_to_wfst ();
   
-  converter->arpafst.Write (FLAGS_ofile);
+  converter->arpafst.Write (FST_FLAGS_ofile);
 
-  if (FLAGS_ssyms.compare ("") != 0) {
-    converter->ssyms->WriteText (FLAGS_ssyms);
+  if (FST_FLAGS_ssyms.compare ("") != 0) {
+    converter->ssyms->WriteText (FST_FLAGS_ssyms);
   }
   
   delete converter;

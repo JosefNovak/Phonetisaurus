@@ -38,11 +38,11 @@ using namespace fst;
 
 typedef unordered_map<int, vector<PathData> > RMAP;
 
-void PrintPathData (const vector<PathData>& results, string FLAGS_word,
+void PrintPathData (const vector<PathData>& results, string FST_FLAGS_word,
 		    const SymbolTable* osyms, bool print_scores = true,
 		    bool nlog_probs = true) {
   for (int i = 0; i < results.size (); i++) {
-    cout << FLAGS_word << "\t";
+    cout << FST_FLAGS_word << "\t";
     if (print_scores == true) {
       if (nlog_probs == true) 
 	cout << results [i].PathWeight << "\t";
@@ -60,20 +60,20 @@ void PrintPathData (const vector<PathData>& results, string FLAGS_word,
 }
 
 void EvaluateWordlist (PhonetisaurusScript& decoder, vector<string> corpus,
-		       int FLAGS_beam, int FLAGS_nbest, bool FLAGS_reverse,
-		       string FLAGS_skip, double FLAGS_thresh, string FLAGS_gsep,
-		       bool FLAGS_write_fsts, bool FLAGS_print_scores,
-		       bool FLAGS_accumulate, double FLAGS_pmass,
-		       bool FLAGS_nlog_probs) {
+		       int FST_FLAGS_beam, int FST_FLAGS_nbest, bool FST_FLAGS_reverse,
+		       string FST_FLAGS_skip, double FST_FLAGS_thresh, string FST_FLAGS_gsep,
+		       bool FST_FLAGS_write_fsts, bool FST_FLAGS_print_scores,
+		       bool FST_FLAGS_accumulate, double FST_FLAGS_pmass,
+		       bool FST_FLAGS_nlog_probs) {
   for (int i = 0; i < corpus.size (); i++) {
-    vector<PathData> results = decoder.Phoneticize (corpus [i], FLAGS_nbest,
-						    FLAGS_beam, FLAGS_thresh,
-						    FLAGS_write_fsts,
-						    FLAGS_accumulate, FLAGS_pmass);
+    vector<PathData> results = decoder.Phoneticize (corpus [i], FST_FLAGS_nbest,
+						    FST_FLAGS_beam, FST_FLAGS_thresh,
+						    FST_FLAGS_write_fsts,
+						    FST_FLAGS_accumulate, FST_FLAGS_pmass);
     PrintPathData (results, corpus [i],
 		   decoder.osyms_,
-		   FLAGS_print_scores,
-		   FLAGS_nlog_probs);
+		   FST_FLAGS_print_scores,
+		   FST_FLAGS_nlog_probs);
   }
 }
 
@@ -99,65 +99,65 @@ int main (int argc, char* argv []) {
   set_new_handler (FailedNewHandler);
   PhonetisaurusSetFlags (usage.c_str(), &argc, &argv, false);
 
-  if (FLAGS_model.compare ("") == 0) {
+  if (FST_FLAGS_model.compare ("") == 0) {
     cerr << "You must supply an FST model to --model" << endl;
     exit (1);
   } else {
-    std::ifstream model_ifp (FLAGS_model);
+    std::ifstream model_ifp (FST_FLAGS_model);
     if (!model_ifp.good ()) {
       cout << "Failed to open --model file '"
-	   << FLAGS_model << "'" << endl;
+	   << FST_FLAGS_model << "'" << endl;
       exit (1);
     }
   }
 
-  if (FLAGS_pmass < 0.0 || FLAGS_pmass > 1) {
+  if (FST_FLAGS_pmass < 0.0 || FST_FLAGS_pmass > 1) {
     cout << "--pmass must be a float value between 0.0 and 1.0." << endl;
     exit (1);
   }
-  if (FLAGS_pmass == 0.0)
-    FLAGS_pmass = 99.0;
+  if (FST_FLAGS_pmass == 0.0)
+    FST_FLAGS_pmass = 99.0;
   else
-    FLAGS_pmass = -log (FLAGS_pmass);
+    FST_FLAGS_pmass = -log (FST_FLAGS_pmass);
   
   bool use_wordlist = false;
-  if (FLAGS_wordlist.compare ("") != 0) {
-    std::ifstream wordlist_ifp (FLAGS_wordlist);
+  if (FST_FLAGS_wordlist.compare ("") != 0) {
+    std::ifstream wordlist_ifp (FST_FLAGS_wordlist);
     if (!wordlist_ifp.good ()) {
       cout << "Failed to open --wordlist file '"
-	   << FLAGS_wordlist << "'" << endl;
+	   << FST_FLAGS_wordlist << "'" << endl;
       exit (1);
     } else {
       use_wordlist = true;
     }
   }
 
-  if (FLAGS_wordlist.compare ("") == 0 && FLAGS_word.compare ("") == 0) {
+  if (FST_FLAGS_wordlist.compare ("") == 0 && FST_FLAGS_word.compare ("") == 0) {
     cout << "Either --wordlist or --word must be set!" << endl;
     exit (1);
   }
 
   if (use_wordlist == true) {
     vector<string> corpus;
-    LoadWordList (FLAGS_wordlist, &corpus);
+    LoadWordList (FST_FLAGS_wordlist, &corpus);
     
-    PhonetisaurusScript decoder (FLAGS_model, FLAGS_gsep);
+    PhonetisaurusScript decoder (FST_FLAGS_model, FST_FLAGS_gsep);
     EvaluateWordlist (
-	    decoder, corpus, FLAGS_beam, FLAGS_nbest, FLAGS_reverse,
-	    FLAGS_skip, FLAGS_thresh, FLAGS_gsep, FLAGS_write_fsts,
-	    FLAGS_print_scores, FLAGS_accumulate, FLAGS_pmass,
-	    FLAGS_nlog_probs
+	    decoder, corpus, FST_FLAGS_beam, FST_FLAGS_nbest, FST_FLAGS_reverse,
+	    FST_FLAGS_skip, FST_FLAGS_thresh, FST_FLAGS_gsep, FST_FLAGS_write_fsts,
+	    FST_FLAGS_print_scores, FST_FLAGS_accumulate, FST_FLAGS_pmass,
+	    FST_FLAGS_nlog_probs
 	  );
   } else {
-    PhonetisaurusScript decoder (FLAGS_model, FLAGS_gsep);
+    PhonetisaurusScript decoder (FST_FLAGS_model, FST_FLAGS_gsep);
     vector<PathData> results = decoder.Phoneticize (
-		         FLAGS_word, FLAGS_nbest, FLAGS_beam, FLAGS_thresh,
-			 FLAGS_write_fsts, FLAGS_accumulate, FLAGS_pmass
+		         FST_FLAGS_word, FST_FLAGS_nbest, FST_FLAGS_beam, FST_FLAGS_thresh,
+			 FST_FLAGS_write_fsts, FST_FLAGS_accumulate, FST_FLAGS_pmass
 		       );
-    PrintPathData (results, FLAGS_word,
+    PrintPathData (results, FST_FLAGS_word,
 		   decoder.osyms_,
-		   FLAGS_print_scores,
-		   FLAGS_nlog_probs);
+		   FST_FLAGS_print_scores,
+		   FST_FLAGS_nlog_probs);
   }
   
   return 0;

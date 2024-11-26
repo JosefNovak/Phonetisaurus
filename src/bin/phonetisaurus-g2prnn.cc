@@ -17,33 +17,33 @@ typedef unordered_map<int, SimpleResult> RMAP;
 
 void ThreadedEvaluateWordlist (vector<string>& corpus, RMAP& rmap,
 			       LegacyRnnLMHash& h, Decodable& s, 
-			       int FLAGS_threads, int FLAGS_beam, 
-			       int FLAGS_kmax, int FLAGS_nbest, 
-			       bool FLAGS_reverse, string FLAGS_gpdelim,
-			       string FLAGS_gdelim, string FLAGS_skip,
-			       double FLAGS_thresh, string FLAGS_gsep) {
+			       int FST_FLAGS_threads, int FST_FLAGS_beam, 
+			       int FST_FLAGS_kmax, int FST_FLAGS_nbest, 
+			       bool FST_FLAGS_reverse, string FST_FLAGS_gpdelim,
+			       string FST_FLAGS_gdelim, string FST_FLAGS_skip,
+			       double FST_FLAGS_thresh, string FST_FLAGS_gsep) {
   int csize = corpus.size ();
 
 #ifdef _OPENMP
 #pragma omp parallel for
 #endif
-  for (int x = 0; x < FLAGS_threads; x++) {
+  for (int x = 0; x < FST_FLAGS_threads; x++) {
     RnnLMDecoder<Decodable> decoder (s);
 
-    int start = x * (csize / FLAGS_threads);
-    int end   = (x == FLAGS_threads - 1) ? csize \
-      : start + (csize / FLAGS_threads);
+    int start = x * (csize / FST_FLAGS_threads);
+    int end   = (x == FST_FLAGS_threads - 1) ? csize \
+      : start + (csize / FST_FLAGS_threads);
     for (int i = start; i < end; i++) {
       vector<string> graphemes = tokenize_utf8_string (&corpus [i],
-							 &FLAGS_gsep);
-      if (FLAGS_reverse == true)
+							 &FST_FLAGS_gsep);
+      if (FST_FLAGS_reverse == true)
 	reverse (graphemes.begin (), graphemes.end ());
 
       graphemes.push_back ("</s>");
       SimpleResult result = \
-	decoder.Decode (graphemes, FLAGS_beam, FLAGS_kmax, 
-			FLAGS_nbest, FLAGS_thresh, FLAGS_gpdelim,
-			FLAGS_gdelim, FLAGS_skip);
+	decoder.Decode (graphemes, FST_FLAGS_beam, FST_FLAGS_kmax, 
+			FST_FLAGS_nbest, FST_FLAGS_thresh, FST_FLAGS_gpdelim,
+			FST_FLAGS_gdelim, FST_FLAGS_skip);
       rmap [i] = result;
     }
   }
@@ -58,25 +58,25 @@ void ThreadedEvaluateWordlist (vector<string>& corpus, RMAP& rmap,
 }
 
 void EvaluateWordlist (vector<string>& corpus,
-		       LegacyRnnLMHash& h, Decodable& s, int FLAGS_beam, 
-		       int FLAGS_kmax, int FLAGS_nbest, bool FLAGS_reverse, 
-		       string FLAGS_gpdelim, string FLAGS_gdelim, 
-		       string FLAGS_skip, double FLAGS_thresh,
-		       string FLAGS_gsep) {
+		       LegacyRnnLMHash& h, Decodable& s, int FST_FLAGS_beam, 
+		       int FST_FLAGS_kmax, int FST_FLAGS_nbest, bool FST_FLAGS_reverse, 
+		       string FST_FLAGS_gpdelim, string FST_FLAGS_gdelim, 
+		       string FST_FLAGS_skip, double FST_FLAGS_thresh,
+		       string FST_FLAGS_gsep) {
 
   RnnLMDecoder<Decodable> decoder (s);
   for (int i = 0; i < corpus.size (); i++) {
     vector<string> graphemes = tokenize_utf8_string (&corpus [i],
-						     &FLAGS_gsep);
-    if (FLAGS_reverse == true)
+						     &FST_FLAGS_gsep);
+    if (FST_FLAGS_reverse == true)
 	reverse (graphemes.begin (), graphemes.end ());
 
     graphemes.push_back ("</s>");
     
     SimpleResult result = \
-      decoder.Decode (graphemes, FLAGS_beam, FLAGS_kmax, 
-		      FLAGS_nbest, FLAGS_thresh, FLAGS_gpdelim,
-		      FLAGS_gdelim, FLAGS_skip);
+      decoder.Decode (graphemes, FST_FLAGS_beam, FST_FLAGS_kmax, 
+		      FST_FLAGS_nbest, FST_FLAGS_thresh, FST_FLAGS_gpdelim,
+		      FST_FLAGS_gdelim, FST_FLAGS_skip);
     
     for (int k = 0; k < result.pronunciations.size (); k++)
       cout << result.word << "\t" << result.scores [k] << "\t" 
@@ -85,22 +85,22 @@ void EvaluateWordlist (vector<string>& corpus,
 }
 
 void EvaluateWord (string word, LegacyRnnLMHash& h, Decodable& s, 
-		   int FLAGS_beam, int FLAGS_kmax, int FLAGS_nbest, 
-		   bool FLAGS_reverse, string FLAGS_gpdelim, 
-		   string FLAGS_gdelim, string FLAGS_skip, 
-		   double FLAGS_thresh, string FLAGS_gsep) {
+		   int FST_FLAGS_beam, int FST_FLAGS_kmax, int FST_FLAGS_nbest, 
+		   bool FST_FLAGS_reverse, string FST_FLAGS_gpdelim, 
+		   string FST_FLAGS_gdelim, string FST_FLAGS_skip, 
+		   double FST_FLAGS_thresh, string FST_FLAGS_gsep) {
 
   vector<string> graphemes = tokenize_utf8_string (&word,
-						   &FLAGS_gsep);
-  if (FLAGS_reverse == true)
+						   &FST_FLAGS_gsep);
+  if (FST_FLAGS_reverse == true)
     reverse (graphemes.begin (), graphemes.end ());
   graphemes.push_back ("</s>");
   
   RnnLMDecoder<Decodable> decoder (s);
   SimpleResult result =	\
-      decoder.Decode (graphemes, FLAGS_beam, FLAGS_kmax, 
-		      FLAGS_nbest, FLAGS_thresh, FLAGS_gpdelim,
-		      FLAGS_gdelim, FLAGS_skip);
+      decoder.Decode (graphemes, FST_FLAGS_beam, FST_FLAGS_kmax, 
+		      FST_FLAGS_nbest, FST_FLAGS_thresh, FST_FLAGS_gpdelim,
+		      FST_FLAGS_gdelim, FST_FLAGS_skip);
     
   for (int k = 0; k < result.pronunciations.size (); k++)
     cout << result.word << "\t" << result.scores [k] << "\t" 
@@ -128,64 +128,64 @@ int main (int argc, char* argv []) {
   set_new_handler (FailedNewHandler);
   PhonetisaurusSetFlags (usage.c_str (), &argc, &argv, false);
 
-  if (FLAGS_rnnlm.compare ("") == 0) {
+  if (FST_FLAGS_rnnlm.compare ("") == 0) {
     cout << "--rnnlm model is required!" << endl;
     exit (1);
   } else {
-    std::ifstream rnnlm_ifp (FLAGS_rnnlm);
+    std::ifstream rnnlm_ifp (FST_FLAGS_rnnlm);
     if (!rnnlm_ifp.good ()) {
       cout << "Faile to open --rnnlm file '"
-	   << FLAGS_rnnlm << "'" << endl;
+	   << FST_FLAGS_rnnlm << "'" << endl;
       exit (1);
     }
   }
 
   bool use_wordlist = false;
-  if (FLAGS_wordlist.compare ("") != 0) {
-    std::ifstream wordlist_ifp (FLAGS_wordlist);
+  if (FST_FLAGS_wordlist.compare ("") != 0) {
+    std::ifstream wordlist_ifp (FST_FLAGS_wordlist);
     if (!wordlist_ifp.good ()) {
       cout << "Failed to open --wordlist file '" 
-	   << FLAGS_wordlist << "'" << endl;
+	   << FST_FLAGS_wordlist << "'" << endl;
       exit (1);
     } else {
       use_wordlist = true;
     }
   }
       
-  if (FLAGS_wordlist.compare ("") == 0 && FLAGS_word.compare ("") == 0) {
+  if (FST_FLAGS_wordlist.compare ("") == 0 && FST_FLAGS_word.compare ("") == 0) {
     cout << "Either --wordlist or --word must be set!" << endl;
   }
  
 #ifdef _OPENMP
-  omp_set_num_threads (FLAGS_threads);
+  omp_set_num_threads (FST_FLAGS_threads);
 #endif
   vector<string> corpus;
 
-  LoadWordList (FLAGS_wordlist, &corpus);
+  LoadWordList (FST_FLAGS_wordlist, &corpus);
 
   RMAP rmap;
 
-  LegacyRnnLMReader<Decodable, LegacyRnnLMHash> reader (FLAGS_rnnlm);
-  LegacyRnnLMHash h = reader.CopyVocabHash (FLAGS_gdelim, FLAGS_gpdelim);
+  LegacyRnnLMReader<Decodable, LegacyRnnLMHash> reader (FST_FLAGS_rnnlm);
+  LegacyRnnLMHash h = reader.CopyVocabHash (FST_FLAGS_gdelim, FST_FLAGS_gpdelim);
   Decodable s = reader.CopyLegacyRnnLM (h);
 
   if (use_wordlist == true) {
-    if (FLAGS_threads > 1) {
-      ThreadedEvaluateWordlist (corpus, rmap, h, s, FLAGS_threads,
-				FLAGS_beam, FLAGS_kmax, FLAGS_nbest,
-				FLAGS_reverse, FLAGS_gpdelim,
-				FLAGS_gdelim, FLAGS_skip,
-				FLAGS_thresh, FLAGS_gsep);
+    if (FST_FLAGS_threads > 1) {
+      ThreadedEvaluateWordlist (corpus, rmap, h, s, FST_FLAGS_threads,
+				FST_FLAGS_beam, FST_FLAGS_kmax, FST_FLAGS_nbest,
+				FST_FLAGS_reverse, FST_FLAGS_gpdelim,
+				FST_FLAGS_gdelim, FST_FLAGS_skip,
+				FST_FLAGS_thresh, FST_FLAGS_gsep);
     } else {
-      EvaluateWordlist (corpus, h, s, FLAGS_beam, 
-			FLAGS_kmax, FLAGS_nbest, FLAGS_reverse, 
-			FLAGS_gpdelim, FLAGS_gdelim, FLAGS_skip, 
-			FLAGS_thresh, FLAGS_gsep);
+      EvaluateWordlist (corpus, h, s, FST_FLAGS_beam, 
+			FST_FLAGS_kmax, FST_FLAGS_nbest, FST_FLAGS_reverse, 
+			FST_FLAGS_gpdelim, FST_FLAGS_gdelim, FST_FLAGS_skip, 
+			FST_FLAGS_thresh, FST_FLAGS_gsep);
     }
   } else {
-    EvaluateWord (FLAGS_word, h, s, FLAGS_beam, FLAGS_kmax,
-		  FLAGS_nbest, FLAGS_reverse, FLAGS_gpdelim,
-		  FLAGS_gdelim, FLAGS_skip, FLAGS_thresh, FLAGS_gsep);
+    EvaluateWord (FST_FLAGS_word, h, s, FST_FLAGS_beam, FST_FLAGS_kmax,
+		  FST_FLAGS_nbest, FST_FLAGS_reverse, FST_FLAGS_gpdelim,
+		  FST_FLAGS_gdelim, FST_FLAGS_skip, FST_FLAGS_thresh, FST_FLAGS_gsep);
   }
 
   return 0;

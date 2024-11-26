@@ -190,12 +190,12 @@ void PhonetisaurusSetFlags (const char* usage, int* argc, char*** argv,
       FlagRegister<string>::GetRegister();
     if (string_register->SetFlag(arg, val))
       continue;
-    FlagRegister<int32> *int32_register =
-      FlagRegister<int32>::GetRegister();
+    FlagRegister<int32_t> *int32_register =
+      FlagRegister<int32_t>::GetRegister();
     if (int32_register->SetFlag(arg, val))
       continue;
-    FlagRegister<int64> *int64_register =
-      FlagRegister<int64>::GetRegister();
+    FlagRegister<int64_t> *int64_register =
+      FlagRegister<int64_t>::GetRegister();
     if (int64_register->SetFlag(arg, val))
       continue;
     FlagRegister<double> *double_register =
@@ -206,7 +206,7 @@ void PhonetisaurusSetFlags (const char* usage, int* argc, char*** argv,
     LOG(FATAL) << "SetFlags: Bad option: " << (*argv)[index];
   }
   
-  if (FLAGS_help) {
+  if (FST_FLAGS_help) {
     //Just show program flags - NOT general OpenFst flags
     // There are too many and they are just confusing.
     std::set< pair<string, string> > usage_set;
@@ -217,9 +217,9 @@ void PhonetisaurusSetFlags (const char* usage, int* argc, char*** argv,
     bool_register->GetUsage(&usage_set);
     FlagRegister<string> *string_register = FlagRegister<string>::GetRegister();
     string_register->GetUsage(&usage_set);
-    FlagRegister<int32> *int32_register = FlagRegister<int32>::GetRegister();
+    FlagRegister<int32_t> *int32_register = FlagRegister<int32_t>::GetRegister();
     int32_register->GetUsage(&usage_set);
-    FlagRegister<int64> *int64_register = FlagRegister<int64>::GetRegister();
+    FlagRegister<int64_t> *int64_register = FlagRegister<int64_t>::GetRegister();
     int64_register->GetUsage(&usage_set);
     FlagRegister<double> *double_register = FlagRegister<double>::GetRegister();
     double_register->GetUsage(&usage_set);

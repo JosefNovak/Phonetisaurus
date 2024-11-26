@@ -108,7 +108,7 @@ void LatticePruner::_forward_backward( VectorFst<StdArc>* fst ){
   VectorFst<LogArc>* lfst = new VectorFst<LogArc>();
   vector<LogWeight>  alpha, beta;
 
-  Map(*fst, lfst, StdToLogMapper());
+  ArcMap(*fst, lfst, StdToLogMapper());
 
   //Normalize so that subsequent operations don't go crazy
   Push<LogArc, REWEIGHT_TO_FINAL>(*lfst, pfst, kPushWeights);
@@ -137,7 +137,7 @@ void LatticePruner::_forward_backward( VectorFst<StdArc>* fst ){
     }
   }
 
-  Map(*pfst, fst, LogToStdMapper()); 
+  ArcMap(*pfst, fst, LogToStdMapper()); 
 
   delete lfst;
   delete pfst;
